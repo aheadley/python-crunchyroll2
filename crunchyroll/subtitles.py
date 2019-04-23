@@ -122,9 +122,7 @@ class SubtitleDecrypter(object):
         fbn_seq = list(seq_seed)
         for i in range(seq_len):
             fbn_seq.append(fbn_seq[-1] + fbn_seq[-2])
-        hash_secret = list(map(
-            lambda c: chr(c % mod_value + self.HASH_SECRET_CHAR_OFFSET),
-            fbn_seq[2:]))
+        hash_secret = list([chr(c % mod_value + self.HASH_SECRET_CHAR_OFFSET) for c in fbn_seq[2:]])
         return ''.join(hash_secret)
 
 class SubtitleFormatter(object):
@@ -155,21 +153,21 @@ class ASS4Formatter(SubtitleFormatter):
     """Subtitle formatter for ASS v4 format
     """
 
-    STYLE_HEADER    = u'[V4 Styles]'
-    STYLE_KEYS      = u'Format: Name, Fontname, Fontsize, PrimaryColour, ' \
+    STYLE_HEADER    = '[V4 Styles]'
+    STYLE_KEYS      = 'Format: Name, Fontname, Fontsize, PrimaryColour, ' \
         'SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, ' \
         'StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, ' \
         'Shadow, Alignment, MarginL, MarginR, MarginV, Encoding'
-    STYLE_FORMAT    = u'Style: {name}, {font_name}, {font_size}, {primary_colour}, ' \
+    STYLE_FORMAT    = 'Style: {name}, {font_name}, {font_size}, {primary_colour}, ' \
         '{secondary_colour}, {outline_colour}, {back_colour}, {bold}, {italic}, ' \
         '{underline}, {strikeout}, {scale_x}, {scale_y}, {spacing}, {angle}, ' \
         '{border_style}, {outline}, {shadow}, {alignment}, {margin_l}, ' \
         '{margin_r}, {margin_v}, {encoding}'
 
-    EVENT_HEADER    = u'[Events]'
-    EVENT_KEYS      = u'Format: Layer, Start, End, Style, Name, MarginL, ' \
+    EVENT_HEADER    = '[Events]'
+    EVENT_KEYS      = 'Format: Layer, Start, End, Style, Name, MarginL, ' \
         'MarginR, MarginV, Effect, Text'
-    EVENT_FORMAT    = u'Dialogue: 0,{start},{end},{style},{name},{margin_l},' \
+    EVENT_FORMAT    = 'Dialogue: 0,{start},{end},{style},{name},{margin_l},' \
         '{margin_r},{margin_v},{effect},{text}'
 
     def _format(self, styled_subtitle):
@@ -180,7 +178,7 @@ class ASS4Formatter(SubtitleFormatter):
         ])
 
     def _format_header(self, subtitle_element):
-        header = u"""[Script Info]
+        header = """[Script Info]
 Title: {title}
 ScriptType: v4.00
 WrapStyle: {wrap_style}
@@ -228,10 +226,10 @@ class ASS4plusFormatter(ASS4Formatter):
     """Subtitle formatter for ASS v4+ format
     """
 
-    STYLE_HEADER    = u'[V4+ Styles]'
+    STYLE_HEADER    = '[V4+ Styles]'
 
     def _format_header(self, subtitle_element):
-        header = u"""[Script Info]
+        header = """[Script Info]
 Title: {title}
 ScriptType: v4.00+
 WrapStyle: {wrap_style}
@@ -284,4 +282,4 @@ class SRTFormatter(SubtitleFormatter):
         @return str
         """
         return '{0:02d}:{1:02d}:{2:02d},{3:02d}0'.format(
-            *map(int, timestamp.replace('.', ':').split(':')))
+            *list(map(int, timestamp.replace('.', ':').split(':'))))

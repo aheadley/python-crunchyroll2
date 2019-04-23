@@ -22,7 +22,7 @@ import pipes
 import xml.etree.ElementTree as ET
 
 try:
-    from HTMLParser import HTMLParser
+    from html.parser import HTMLParser
 except ImportError:
     from html.parser import HTMLParser
 
@@ -64,7 +64,7 @@ def xml_node_to_string(xml_node):
 def format_rtmpdump_args(rtmp_data):
     arg_string = '-r {url} -W {swf_url} -T {token} -y {file} ' \
         '-p {page_url} -t {url}'
-    return arg_string.format(**dict([(k, pipes.quote(v)) for (k,v) in rtmp_data.items()]))
+    return arg_string.format(**dict([(k, pipes.quote(v)) for (k,v) in list(rtmp_data.items())]))
 
 def decrypt_image_stream(image_handle, chunk_size=4 * 1024):
     xor_mask = ANDROID_MANGA.XOR_MASK
