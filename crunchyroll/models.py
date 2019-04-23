@@ -19,6 +19,7 @@
 import re
 import logging
 import functools
+import base64
 
 from crunchyroll.util import parse_xml_string, return_collection, xml_node_to_string
 from crunchyroll.subtitles import SubtitleDecrypter, SRTFormatter, ASS4plusFormatter
@@ -50,10 +51,7 @@ class DictModel(object):
 
 class XmlModel(object):
     def __init__(self, node):
-        try:
-            is_basestring = isinstance(node, str)
-        except NameError:
-            is_basestring = isinstance(node, (bytes, str))
+        is_basestring = isinstance(node, (bytes, str))
         if is_basestring:
             try:
                 node = parse_xml_string(node)
@@ -142,8 +140,8 @@ class Subtitle(XmlModel):
     def decrypt(self):
         return StyledSubtitle(self._decrypter.decrypt(
             self._decrypter._build_encryption_key(int(self.id)),
-            self['iv'][0].text.decode('base64'),
-            self['data'][0].text.decode('base64')))
+            base64.b64decode(self['iv'][0].text),
+            base64.b64decode(self['data'][0].text)))
 
 class StyledSubtitle(XmlModel):
     def get_ass_formatted(self):

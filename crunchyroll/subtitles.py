@@ -21,6 +21,7 @@ import hashlib
 import zlib
 import re
 import logging
+import base64
 
 from tlslite.utils.cipherfactory import createAES
 from crunchyroll.util import iteritems
@@ -28,7 +29,7 @@ from crunchyroll.util import iteritems
 logger = logging.getLogger('crunchyroll.subtitles')
 
 def aes_decrypt(key, iv, data):
-    return str(createAES(key, iv).decrypt(data))
+    return createAES(key, iv).decrypt(data)
 
 class SubtitleDecrypter(object):
     """Decrypt Crunchyroll's encrypted subtitle data
@@ -55,8 +56,8 @@ class SubtitleDecrypter(object):
         @return str
         """
         return self.decrypt(self._build_encryption_key(int(subtitle.id)),
-            subtitle['iv'][0].text.decode('base64'),
-            subtitle['data'][0].text.decode('base64'))
+            base64.b64decode(subtitle['iv'][0].text),
+            base64.b64decode(subtitle['data'][0].text))
 
     def decrypt(self, encryption_key, iv, encrypted_data):
         """Decrypt encrypted subtitle data
@@ -69,7 +70,7 @@ class SubtitleDecrypter(object):
 
         logger.info('Decrypting subtitles with length (%d bytes), key=%r',
             len(encrypted_data), encryption_key)
-        return zlib.decompress(aes_decrypt(encryption_key, iv, encrypted_data))
+        return zlib.decompress(aes_decrypt(encryption_key, iv, encrypted_data)).decode('utf-8')
 
     def _build_encryption_key(self, subtitle_id, key_size=ENCRYPTION_KEY_SIZE):
         """Generate the encryption key for a given media item
@@ -87,7 +88,7 @@ class SubtitleDecrypter(object):
         sha1_hash = hashlib.new('sha1', self._build_hash_secret((1, 2)) +
             self._build_hash_magic(subtitle_id)).digest()
         # pad to 256-bit hash for 32 byte key
-        sha1_hash += '\x00' * max(key_size - len(sha1_hash), 0)
+        sha1_hash += b'\x00' * max(key_size - len(sha1_hash), 0)
         return sha1_hash[:key_size]
 
     def _build_hash_magic(self, subtitle_id):
@@ -101,7 +102,7 @@ class SubtitleDecrypter(object):
 
         media_magic = self.HASH_MAGIC_CONST ^ subtitle_id
         hash_magic = media_magic ^ media_magic >> 3 ^ media_magic * 32
-        return str(hash_magic)
+        return str(hash_magic).encode('utf-8')
 
     def _build_hash_secret(self, seq_seed, seq_len=HASH_SECRET_LENGTH,
             mod_value=HASH_SECRET_MOD_CONST):
@@ -123,7 +124,7 @@ class SubtitleDecrypter(object):
         for i in range(seq_len):
             fbn_seq.append(fbn_seq[-1] + fbn_seq[-2])
         hash_secret = list([chr(c % mod_value + self.HASH_SECRET_CHAR_OFFSET) for c in fbn_seq[2:]])
-        return ''.join(hash_secret)
+        return ''.join(hash_secret).encode('utf-8')
 
 class SubtitleFormatter(object):
     """Base subtitle formatter class
@@ -138,7 +139,7 @@ class SubtitleFormatter(object):
         """
         logger.debug('Formatting subtitles (id=%s) with %s',
             subtitles.id, self.__class__.__name__)
-        return self._format(subtitles).encode('utf-8')
+        return self._format(subtitles)
 
     def _format(self, styled_subtitle):
         """Do the actual formatting on the parsed xml document, should be

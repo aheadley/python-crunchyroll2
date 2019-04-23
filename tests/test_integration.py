@@ -52,5 +52,16 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(99, len([ep for ep in self._media if not ep.clip]))
         self.assertEqual('Life Changes, Promises Don\'t', self._media[0].name)
 
+    @skip_if_no_creds
+    def test_subtitle_decryption(self):
+        self.api.login(username=CRUNCHYROLL_USERNAME, password=CRUNCHYROLL_PASSWORD)
+        series = self.api.search_anime_series('Space Brothers')[0]
+        media = self.api.list_media(series)
+        ep = [e for e in media if e.episode_number == '40'][0]
+
+        stream = self.api.get_media_stream(ep, 0, 0)
+        subs = stream.default_subtitles.decrypt().get_ass_formatted()
+        self.assertIn('Hibito, let me see your back', subs)
+
 if __name__ == '__main__':
     unittest.main()
