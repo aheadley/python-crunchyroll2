@@ -42,7 +42,7 @@ def make_ajax_api_method(req_method, secure=False):
             except Exception as err: # TODO: make this more specific
                 logger.warn('Caught exception of class: %s', err.__class__.__name__)
                 raise ApiNetworkException(err)
-            if not (response.ok and response.headers['Content-Type'] == 'text/xml'):
+            if not (response.ok and 'text/xml' in response.headers['Content-Type']):
                 raise ApiBadResponseException(response)
             else:
                 return response.content
