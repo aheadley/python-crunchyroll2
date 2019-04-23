@@ -141,8 +141,8 @@ class SCRAPER(API):
 
     class VIDEO(AJAX.VIDEO):
         FORMAT_PARAMS       = dict((f, f[-1]+f[:-1]) for f in AJAX.VIDEO.FORMATS)
-        FORMAT_PATTERN      = r'swfobject\.embedSWF.*express_install\.swf\',' \
-            '.*video_format%3D(\d+).*video_quality%3D(\d+)%26.*,loadBrandedPlayerAd.*'
+        FORMAT_PATTERN      = r'\.swf\?' \
+            '.*video_format%3D(\d+)%.*video_quality%3D(\d+)%'
 
 
 
