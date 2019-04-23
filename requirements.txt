@@ -1,2 +1,7 @@
-requests>=1.1.0
-tlslite>=0.4.6
+certifi==2019.3.9
+chardet==3.0.4
+ecdsa==0.13.2
+idna==2.8
+requests==2.21.0
+tlslite-ng==0.7.5
+urllib3==1.24.2

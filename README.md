@@ -1,8 +1,5 @@
-python-crunchyroll
+python-crunchyroll2
 ==================
-
-**ABANDONED** I don't have a Crunchyroll account or any real interest in
-this package anymore
 
 Python interface to Crunchyroll's undocumented APIs and utilities
 for working with the returned data. Eventual plan is to create a better
@@ -10,9 +7,9 @@ XMBC plugin.
 
 ### Requirements
 
-  * Python 2.6+
+  * Python 3.5+
   * requests
-  * tlslite
+  * tlslite-ng
 
 ### Usage
 
