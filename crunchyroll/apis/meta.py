@@ -24,7 +24,7 @@ from crunchyroll.apis import ApiInterface
 from crunchyroll.apis.android import AndroidApi
 from crunchyroll.apis.ajax import AjaxApi
 from crunchyroll.apis.scraper import ScraperApi
-from crunchyroll.apis.android_manga import AndroidMangaApi
+# from crunchyroll.apis.android_manga import AndroidMangaApi
 from crunchyroll.constants import META, AJAX, ANDROID
 from crunchyroll.apis.errors import *
 from crunchyroll.models import *
@@ -74,19 +74,19 @@ def optional_android_logged_in(func):
         return func(self, *pargs, **kwargs)
     return inner_func
 
-def optional_manga_logged_in(func):
-    """Check if andoid manga API is logged in and login if credentials were provided,
-    implies `require_session_started`
-    """
-    @functools.wraps(func)
-    @require_session_started
-    def inner_func(self, *pargs, **kwargs):
-        if not self._manga_api.logged_in and self.has_credentials:
-            logger.info('Logging into android manga API for optional meta method')
-            self._manga_api.cr_login(account=self._state['username'],
-                password=self._state['password'])
-        return func(self, *pargs, **kwargs)
-    return inner_func
+# def optional_manga_logged_in(func):
+#     """Check if andoid manga API is logged in and login if credentials were provided,
+#     implies `require_session_started`
+#     """
+#     @functools.wraps(func)
+#     @require_session_started
+#     def inner_func(self, *pargs, **kwargs):
+#         if not self._manga_api.logged_in and self.has_credentials:
+#             logger.info('Logging into android manga API for optional meta method')
+#             self._manga_api.cr_login(account=self._state['username'],
+#                 password=self._state['password'])
+#         return func(self, *pargs, **kwargs)
+#     return inner_func
 
 def require_ajax_logged_in(func):
     """Check if ajax API is logged in and login if not
@@ -126,20 +126,18 @@ class MetaApi(ApiInterface):
         }
         self._ajax_api = AjaxApi()
         self._android_api = AndroidApi()
-        self._manga_api = AndroidMangaApi()
+        # self._manga_api = AndroidMangaApi()
         if state is not None:
             self.set_state(state)
 
     @property
     def session_started(self):
         return self._ajax_api.session_started and \
-            self._android_api.session_started and \
-            self._manga_api.session_started
+            self._android_api.session_started
 
     @property
     def logged_in(self):
-        return self._ajax_api.logged_in and self._android_api.logged_in and \
-            self._manga_api.logged_in
+        return self._ajax_api.logged_in and self._android_api.logged_in
 
     @property
     def has_credentials(self):
@@ -151,7 +149,7 @@ class MetaApi(ApiInterface):
             'meta':     self._state,
             'ajax':     self._ajax_api.get_state(),
             'android':  self._android_api.get_state(),
-            'manga':    self._manga_api.get_state(),
+            # 'manga':    self._manga_api.get_state(),
         })
 
     def set_state(self, state):
@@ -160,7 +158,7 @@ class MetaApi(ApiInterface):
         self._state = decoded_state['meta']
         self._ajax_api.set_state(decoded_state['ajax'])
         self._android_api.set_state(decoded_state['android'])
-        self._manga_api.set_state(decoded_state['manga'])
+        # self._manga_api.set_state(decoded_state['manga'])
 
     @optional_android_logged_in
     def is_premium(self, media_type):
@@ -180,7 +178,7 @@ class MetaApi(ApiInterface):
         @return bool
         """
         self._android_api.start_session()
-        self._manga_api.cr_start_session()
+        # self._manga_api.cr_start_session()
         return self.session_started
 
     @require_session_started
@@ -199,7 +197,7 @@ class MetaApi(ApiInterface):
         try:
             self._ajax_api.User_Login(name=username, password=password)
             self._android_api.login(account=username, password=password)
-            self._manga_api.cr_login(account=username, password=password)
+            # self._manga_api.cr_login(account=username, password=password)
         except Exception as err:
             # something went wrong, rollback
             self._state = state_snapshot
@@ -246,14 +244,14 @@ class MetaApi(ApiInterface):
             offset=offset)
         return result
 
-    @require_session_started
-    @return_collection(Series)
-    def list_manga_series(self, filter=None, content_type='jp_manga'):
-        """Get a list of manga series
-        """
+    # @require_session_started
+    # @return_collection(Series)
+    # def list_manga_series(self, filter=None, content_type='jp_manga'):
+    #     """Get a list of manga series
+    #     """
 
-        result = self._manga_api.list_series(filter, content_type)
-        return result
+    #     result = self._manga_api.list_series(filter, content_type)
+    #     return result
 
     @optional_android_logged_in
     @return_collection(Series)
@@ -289,20 +287,20 @@ class MetaApi(ApiInterface):
             filter=ANDROID.FILTER_PREFIX + query_string)
         return result
 
-    @optional_manga_logged_in
-    @return_collection(Series)
-    def search_manga_series(self, query_string):
-        """Search the manga series list by name, case-insensitive
+    # @optional_manga_logged_in
+    # @return_collection(Series)
+    # def search_manga_series(self, query_string):
+    #     """Search the manga series list by name, case-insensitive
 
-        @param str query_string
+    #     @param str query_string
 
-        @return list<crunchyroll.models.Series>
-        """
+    #     @return list<crunchyroll.models.Series>
+    #     """
 
-        result = self._manga_api.list_series()
-        return [series for series in result \
-            if series['locale']['enUS']['name'].lower().startswith(
-                query_string.lower())]
+    #     result = self._manga_api.list_series()
+    #     return [series for series in result \
+    #         if series['locale']['enUS']['name'].lower().startswith(
+    #             query_string.lower())]
 
     @optional_android_logged_in
     @return_collection(Media)
@@ -327,32 +325,32 @@ class MetaApi(ApiInterface):
         result = self._android_api.list_media(**params)
         return result
 
-    @optional_manga_logged_in
-    @return_collection(Chapter)
-    def list_chapters(self, series):
-        """
-        """
-        if self.logged_in:
-            result = self._manga_api.list_chapters(
-                series_id=series.series_id, user_id=self._manga_api._user_data['user_id'])
-        else:
-            result = self._manga_api.list_chapters(series_id=series.series_id)
-        return result['chapters']
+    # @optional_manga_logged_in
+    # @return_collection(Chapter)
+    # def list_chapters(self, series):
+    #     """
+    #     """
+    #     if self.logged_in:
+    #         result = self._manga_api.list_chapters(
+    #             series_id=series.series_id, user_id=self._manga_api._user_data['user_id'])
+    #     else:
+    #         result = self._manga_api.list_chapters(series_id=series.series_id)
+    #     return result['chapters']
 
-    @optional_manga_logged_in
-    @return_collection(Page)
-    def list_pages(self, chapter):
-        """
-        """
+    # @optional_manga_logged_in
+    # @return_collection(Page)
+    # def list_pages(self, chapter):
+    #     """
+    #     """
 
-        result = self._manga_api.list_chapter(chapter_id=chapter.chapter_id)
-        return result['pages']
+    #     result = self._manga_api.list_chapter(chapter_id=chapter.chapter_id)
+    #     return result['pages']
 
-    @optional_manga_logged_in
-    def get_page_stream(self, page, locale='enUS'):
-        req = self._manga_api._connector.get(
-            page.locale[locale].encrypted_composed_image_url, stream=True)
-        return decrypt_image_stream(req)
+    # @optional_manga_logged_in
+    # def get_page_stream(self, page, locale='enUS'):
+    #     req = self._manga_api._connector.get(
+    #         page.locale[locale].encrypted_composed_image_url, stream=True)
+    #     return decrypt_image_stream(req)
 
     @optional_android_logged_in
     @return_collection(Media)
