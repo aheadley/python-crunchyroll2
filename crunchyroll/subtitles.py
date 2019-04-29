@@ -228,6 +228,7 @@ class ASS4plusFormatter(ASS4Formatter):
     """
 
     STYLE_HEADER    = '[V4+ Styles]'
+    STYLE_FORMAT    = ASS4Formatter.STYLE_FORMAT.replace(', ', ',')
 
     def _format_header(self, subtitle_element):
         header = """[Script Info]
